@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Localização</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 0 auto;
+      padding: 30px 20px;
+      text-align: center;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      border: 0;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #resultado {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f2f2f2;
+      border-radius: 10px;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .erro {
+      color: #c00;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>📍 Minha localização</h1>
+
+  <p>
+    Toque no botão abaixo e permita o acesso à sua localização.
+  </p>
+
+  <button onclick="pegarLocalizacao()">
+    Pegar minha localização
+  </button>
+
+  <div id="resultado">
+    Aguardando...
+  </div>
+
+  <script>
+    function pegarLocalizacao() {
+
+      const resultado = document.getElementById("resultado");
+
+      if (!navigator.geolocation) {
+        resultado.innerHTML =
+          '<p class="erro">Seu navegador não suporta geolocalização.</p>';
+        return;
+      }
+
+      resultado.innerHTML = "📡 Obtendo localização...";
+
+      navigator.geolocation.getCurrentPosition(
+
+        function(position) {
+
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+          const precisao = position.coords.accuracy;
+
+          resultado.innerHTML = `
+            <strong>Localização encontrada!</strong>
+
+            <p>
+              <b>Latitude:</b><br>
+              ${latitude}
+            </p>
+
+            <p>
+              <b>Longitude:</b><br>
+              ${longitude}
+            </p>
+
+            <p>
+              <b>Precisão:</b><br>
+              ${precisao.toFixed(2)} metros
+            </p>
+
+            <p>
+              <a
+                href="https://www.google.com/maps?q=${latitude},${longitude}"
+                target="_blank"
+              >
+                📍 Abrir no Google Maps
+              </a>
+            </p>
+
+            <button onclick="copiarLocalizacao()">
+              Copiar coordenadas
+            </button>
+          `;
+
+          // Guarda para o botão de copiar
+          window.minhasCoordenadas =
+            `${latitude},${longitude}`;
+        },
+
+        function(error) {
+
+          let mensagem = "";
+
+          switch (error.code) {
+
+            case error.PERMISSION_DENIED:
+              mensagem =
+                "Você negou a permissão de localização.";
+              break;
+
+            case error.POSITION_UNAVAILABLE:
+              mensagem =
+                "Não foi possível determinar sua localização.";
+              break;
+
+            case error.TIMEOUT:
+              mensagem =
+                "A localização demorou muito para responder.";
+              break;
+
+            default:
+              mensagem =
+                "Ocorreu um erro ao obter a localização.";
+          }
+
+          resultado.innerHTML =
+            `<p class="erro">❌ ${mensagem}</p>`;
+        },
+
+        {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function copiarLocalizacao() {
+
+      if (!window.minhasCoordenadas) {
+        return;
+      }
+
+      navigator.clipboard.writeText(
+        window.minhasCoordenadas
+      ).then(() => {
+
+        alert("Coordenadas copiadas!");
+
+      }).catch(() => {
+
+        alert(window.minhasCoordenadas);
+
+      });
+    }
+  </script>
+
+</body>
+</html>
